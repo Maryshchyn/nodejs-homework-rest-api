@@ -1,60 +1,27 @@
-const express = require('express')
+const express = require('express');
 
-const contactsOperations = require("../../models/contacts")
 
-const router = express.Router()
+const { validation, ctrlWrapper} = require("../../middlewares");
+const { joiSchema, favoriteSchema } = require("../../models/contact")
 
-router.get('/', async (req, res, next) => {
-  try {
-    const contacts = await contactsOperations.listContacts()
-  res.json({
-    status: 'success', 
-    code: 200,
-    data: {
-      result: contacts
-    }
-  })
-  } catch (error) {
-    res.status(500).json({
-      status: 'error',
-      code: 500,
-      message: 'Server error'
-      })
-  }
-  
-})
 
-router.get('/:contactId', async (req, res, next) => {
-  try {
-    const { contactId } = req.params;
-    const result = await contactsOperations.getContactById(contactId);
-    res.json({
-      status: 'success',
-      code: 200,
-      data: {
-        result
-      }
-    })
-  } catch (error) {
-    res.status(500).json({
-      status: 'error',
-      code: 500,
-      message: 'Server error'
-      })
-  }
-  // res.json({ message: 'template message' })
-})
+const { contacts: ctrl } = require('../../controllers');
 
-router.post('/', async (req, res, next) => {
-  res.json({ message: 'template message' })
-})
 
-router.delete('/:contactId', async (req, res, next) => {
-  res.json({ message: 'template message' })
-})
 
-router.put('/:contactId', async (req, res, next) => {
-  res.json({ message: 'template message' })
-})
 
-module.exports = router
+const router = express.Router();
+
+router.get("/", ctrlWrapper(ctrl.getAll));
+
+router.get("/:id", ctrlWrapper(ctrl.getById));
+
+router.post("/", validation(joiSchema), ctrlWrapper(ctrl.add));
+
+router.patch("/:id/favorite", validation(favoriteSchema), ctrlWrapper(ctrl.updateFavorite));
+
+router.put("/:id", validation(joiSchema), ctrlWrapper(ctrl.updateById));
+
+router.delete("/:id", ctrlWrapper(ctrl.remuveById))
+
+module.exports = router;
