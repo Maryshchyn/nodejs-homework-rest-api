@@ -1,7 +1,12 @@
 const { User } = require("../../models");
 const { Conflict } = require("http-errors");
+
 const {v4} = require("uuid")
 const {sendEmail} = require("../../helpers")
+
+const gravatar = require("gravatar")
+
+
 
 
 const register = async (req, res) => {
@@ -10,6 +15,7 @@ const register = async (req, res) => {
     if (user) {
         throw new Conflict(`Use with ${email} alredy exist`)
     }
+
 
     const verificationToken = v4()
     const newUser = new User({ email, subscription, verificationToken });
@@ -22,6 +28,12 @@ const register = async (req, res) => {
         html: `<a target="_blank" href="http://localhost:3000/api/users/verify/${verificationToken}">Підтвердіть email</a>`
     };
     await sendEmail(mail);
+
+    const avavtarURL = gravatar.url(email)
+    const newUser = new User({ email, subscription, avavtarURL });
+    newUser.setPassword(password)
+    newUser.save();
+
     
     res.status(201).json({
         status: 'success',
@@ -29,7 +41,12 @@ const register = async (req, res) => {
         data: {
             user: {
             email: "example@example.com",
+
             subscription: "starter", verificationToken
+
+            subscription: "starter",
+            avavtarURL
+
             }
         }
     })
